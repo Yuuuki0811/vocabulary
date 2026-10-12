@@ -23,6 +23,6 @@ class Tests(unittest.TestCase):
         import server,json
         body=json.dumps({'prompt':'test'}).encode()
         h=Fake('/api/generate',{'Host':'127.0.0.1:8770','Origin':'http://127.0.0.1:8770','Cookie':'business_session='+server.SESSION,'Content-Length':str(len(body)),'Content-Type':'application/json'},body)
-        with patch('server.KEY','mock'),patch('server.MODEL','mock'),patch('server.LAST',-100),patch('server.generate',return_value={'words':[{'word':'invoice','meanings':['发票']}]}) :h.do_POST()
+        with patch('server.KEY','mock'),patch('server.MODEL','mock'),patch('server.WORKSPACE','mock-space'),patch('server.LAST',-100),patch('server.generate',return_value={'words':[{'word':'invoice','meanings':['发票']}]}) :h.do_POST()
         self.assertEqual(h.result[0],200);self.assertEqual(h.result[1]['words'][0]['word'],'invoice')
 if __name__=='__main__':unittest.main()

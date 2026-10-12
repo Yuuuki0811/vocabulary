@@ -1,0 +1,4 @@
+.private-api-config.json
+.env*
+__pycache__/
+.private-accounts.sqlite3*
