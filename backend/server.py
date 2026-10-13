@@ -46,7 +46,7 @@ class Handler(BaseHTTPRequestHandler):
     def send(self, status, value, mime='application/json', cookie=False):
         data = json.dumps(value, ensure_ascii=False).encode() if mime=='application/json' else value
         self.send_response(status)
-        self.send_header('Content-Type', mime+'; charset=utf-8')
+        self.send_header('Content-Type', mime+('; charset=utf-8' if mime in ('application/json','text/html','text/javascript') else ''))
         self.send_header('Cache-Control','no-store')
         self.send_header('X-Content-Type-Options','nosniff')
         self.send_header('X-Frame-Options','DENY')
@@ -93,6 +93,13 @@ class Handler(BaseHTTPRequestHandler):
             if self.path.endswith('/me'):return self.send(200,{'user':user})
             if not user:return self.send(401,{'error':'请先登录学习账户'})
             return self.send(200,{'users':accounts.pair_progress()})
+        if self.path.startswith('/assets/'):
+            from urllib.parse import urlsplit,unquote
+            target=(ROOT/unquote(urlsplit(self.path).path).lstrip('/')).resolve()
+            asset_root=(ROOT/'assets').resolve()
+            if asset_root not in target.parents or not target.is_file():return self.send(404,{'error':'未找到'})
+            mime={'.glb':'model/gltf-binary','.js':'text/javascript','.wasm':'application/wasm','.png':'image/png'}.get(target.suffix,'application/octet-stream')
+            return self.send(200,target.read_bytes(),mime)
         if self.path == '/setup':
             return self.send(200, (ROOT/'setup.html').read_bytes(),'text/html',True)
         if self.path == '/api/status':
